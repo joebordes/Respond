@@ -19,15 +19,8 @@ class Image
 		
 		list($src_width, $src_height, $type, $attr) = Image::getImageInfo($file);
 		
-		$ext = 'jpg';
-		
-		switch($type){ // create image
-			case IMAGETYPE_JPEG: $ext = 'jpg'; break; 
-			case IMAGETYPE_PNG: $ext = 'png'; break; 
-			case IMAGETYPE_GIF: $ext = 'gif'; break; 
-			case 'image/svg+xml' : $ext = 'svg'; break;
-			default: return false; 
-		}
+		$ext = Image::getValidImageExtension($type);
+		if ($ext === false) return false;
 		
 		if($src_width > $max_width){ 
 			$target_w = $max_width; 
@@ -120,15 +113,8 @@ class Image
 		$x_start = $x_start * (1/$scale);
 		$y_start = $y_start * (1/$scale);
 		
-		$ext = 'jpg';
-		
-		switch($type){ // create image
-			case IMAGETYPE_JPEG: $ext = 'jpg'; break; 
-			case IMAGETYPE_PNG: $ext = 'png'; break; 
-			case IMAGETYPE_GIF: $ext = 'gif'; break; 
-			case 'image/svg+xml' : $ext = 'svg'; break;
-			default: return false; 
-		}
+		$ext = Image::getValidImageExtension($type);
+		if ($ext === false) return false;
 		
 		switch($type){ // create image
 			case IMAGETYPE_JPEG: $n_img = imagecreatefromjpeg($file); break; 
@@ -201,15 +187,8 @@ class Image
 		
 		list($curr_w, $curr_h, $type, $attr) = Image::getImageInfo($image);
 		
-		$ext = 'jpg';
-		
-		switch($type){ // create image
-			case IMAGETYPE_JPEG: $ext = 'jpg'; break; 
-			case IMAGETYPE_PNG: $ext = 'png'; break; 
-			case IMAGETYPE_GIF: $ext = 'gif'; break; 
-			case 'image/svg+xml' : $ext = 'svg'; break;
-			default: return false; 
-		}
+		$ext = Image::getValidImageExtension($type);
+		if ($ext === false) return false;
 	
 		$scale_h = $target_h/$curr_h;
 		$scale_w = $target_w/$curr_w;
@@ -315,6 +294,19 @@ class Image
 			}
 		}
 		return array($width, $height, $type, $attr);
+	}
+	
+	public static function getValidImageExtension($filetype) {
+		global $ALLOWED_IMAGETYPES;
+		switch($filetype){ // create image
+			case IMAGETYPE_JPEG: $ext = 'jpg'; break;
+			case IMAGETYPE_PNG: $ext = 'png'; break;
+			case IMAGETYPE_GIF: $ext = 'gif'; break;
+			case 'image/svg+xml' : $ext = 'svg'; break;
+			default: $ext = '';
+		}
+		$is_image = in_array($ext, $ALLOWED_IMAGETYPES);
+		return ($is_image ? $ext : false);
 	}
 }
 	
