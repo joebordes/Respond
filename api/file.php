@@ -10,6 +10,7 @@ class ImageListAllResource extends Tonic\Resource {
      * @method GET
      */
     function get() {
+    	global $ALLOWED_IMAGETYPES;
         // get an authuser
         $authUser = new AuthUser();
 
@@ -26,8 +27,6 @@ class ImageListAllResource extends Tonic\Resource {
 
             $arr = array();
             
-            $image_exts = array('gif', 'png', 'jpg');
-            
             //print each file name
             foreach($files as $file){
                 $f_arr = explode("/",$file);
@@ -40,7 +39,7 @@ class ImageListAllResource extends Tonic\Resource {
         		$ext = strtolower($ext); // convert to lowercase
                 
                 // is image
-                $is_image = in_array($ext, $image_exts);
+                $is_image = in_array($ext, $ALLOWED_IMAGETYPES);
                 
                 // is thumb
                 $is_thumb = false;
@@ -51,7 +50,7 @@ class ImageListAllResource extends Tonic\Resource {
                 
                 if($is_thumb==false && $is_image==true){
                     
-                    list($width, $height, $type, $attr) = getimagesize($directory.$filename);
+                    list($width, $height, $type, $attr) = Image::getImageInfo($directory.$filename);
                     
                     $file = array(
                         'filename' => $filename,
@@ -93,6 +92,7 @@ class FilePostResource extends Tonic\Resource {
      * @method POST
      */
     function get() {
+    	global $ALLOWED_IMAGETYPES,$ALLOWED_FILETYPES;
         // get an authuser
         $authUser = new AuthUser();
 
@@ -129,7 +129,7 @@ class FilePostResource extends Tonic\Resource {
             $directory = '../sites/'.$site['FriendlyId'].'/files/';
             
             // save image
-            if($ext=='png' || $ext=='jpg' || $ext=='gif'){ // upload image
+            if(in_array($ext,$ALLOWED_IMAGETYPES)){ // upload image
             
     			$size=Image::SaveImageWithThumb($directory, $filename, $file);
     			
@@ -138,7 +138,7 @@ class FilePostResource extends Tonic\Resource {
     			
     			// try to get width and height
     			try{
-    				list($width, $height, $type, $attr) = getimagesize($directory.$filename); // get width and height
+    				list($width, $height, $type, $attr) = Image::getImageInfo($directory.$filename); // get width and height
                 }
                 catch(Exception $e){}
                 
@@ -153,7 +153,7 @@ class FilePostResource extends Tonic\Resource {
                     );
                     
     		}
-    		else if($ext=='ico' || $ext=='css' || $ext=='js' || $ext=='pdf' || $ext=='doc' || $ext=='docx' || $ext=='zip'){ // upload file
+    		else if(in_array($ext, $ALLOWED_FILETYPES)){ // upload file
 
     			// upload file
     			Utilities::SaveFile($directory, $filename, $file);
@@ -197,6 +197,7 @@ class FileListAllResource extends Tonic\Resource {
      * @method GET
      */
     function get() {
+    	global $ALLOWED_IMAGETYPES;
         // get an authuser
         $authUser = new AuthUser();
 
@@ -213,8 +214,6 @@ class FileListAllResource extends Tonic\Resource {
 
             $arr = array();
             
-            $image_exts = array('gif', 'png', 'jpg');
-            
             //print each file name
             foreach($files as $file){
                 $f_arr = explode("/",$file);
@@ -227,7 +226,7 @@ class FileListAllResource extends Tonic\Resource {
         		$ext = strtolower($ext); // convert to lowercase
                 
                 // is image
-                $is_image = in_array($ext, $image_exts);
+                $is_image = in_array($ext, $ALLOWED_IMAGETYPES);
                 
                 // is thumb
                 $is_thumb = false;
@@ -242,7 +241,7 @@ class FileListAllResource extends Tonic\Resource {
                     $height = 0;
                     
                     try{
-                    	list($width, $height, $type, $attr) = getimagesize($directory.$filename);
+                    	list($width, $height, $type, $attr) = Image::getImageInfo($directory.$filename);
                     }
 					catch(Exception $e){}
 					

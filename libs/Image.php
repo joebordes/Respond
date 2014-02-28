@@ -17,16 +17,10 @@ class Image
 	
 	public static function Resize($file, $dir, $filename, $max_width, $max_height){
 		
-		list($src_width, $src_height, $type, $attr) = getimagesize($file);
+		list($src_width, $src_height, $type, $attr) = Image::getImageInfo($file);
 		
-		$ext = 'jpg';
-		
-		switch($type){ // create image
-			case IMAGETYPE_JPEG: $ext = 'jpg'; break; 
-			case IMAGETYPE_PNG: $ext = 'png'; break; 
-			case IMAGETYPE_GIF: $ext = 'gif'; break; 
-			default: return false; 
-		}
+		$ext = Image::getValidImageExtension($type);
+		if ($ext === false) return false;
 		
 		if($src_width > $max_width){ 
 			$target_w = $max_width; 
@@ -45,6 +39,7 @@ class Image
 			case IMAGETYPE_JPEG: $n_img = imagecreatefromjpeg($file); break; 
 			case IMAGETYPE_PNG: $n_img = imagecreatefrompng($file); break; 
 			case IMAGETYPE_GIF: $n_img = imagecreatefromgif($file); break; 
+			case 'image/svg+xml' : break;
 			default: return false; 
 		}
 		
@@ -68,9 +63,9 @@ class Image
 				break; 
 			default: break;
 		}
-		
+		if ($type!='image/svg+xml') {
 		imagecopyresampled($dst_img, $n_img, 0, 0, 0, 0, $target_w, $target_h, $src_width, $src_height); 
-		
+		}
 		//die('size='.$size);
 		
 		//return $dst_img;
@@ -96,6 +91,11 @@ class Image
 				$size = filesize($full);
 				break;
 			}
+			case 'svg':{
+				copy($file, $full); // we just copy it, SVG is vectorized it scales directly in browser
+				$size = filesize($full);
+				break;
+			}
 			default: return 0; 
 		}
 		
@@ -105,7 +105,7 @@ class Image
 	
 	public static function ResizeWithCrop($file, $dir, $filename, $x_start, $y_start, $scale, $target_w, $target_h){
 		
-		list($src_w, $src_h, $type, $attr) = getimagesize($file);
+		list($src_w, $src_h, $type, $attr) = Image::getImageInfo($file);
 		
 		$new_w = ceil($src_w * $scale);
 		$new_h = ceil($src_h * $scale);
@@ -113,19 +113,14 @@ class Image
 		$x_start = $x_start * (1/$scale);
 		$y_start = $y_start * (1/$scale);
 		
-		$ext = 'jpg';
-		
-		switch($type){ // create image
-			case IMAGETYPE_JPEG: $ext = 'jpg'; break; 
-			case IMAGETYPE_PNG: $ext = 'png'; break; 
-			case IMAGETYPE_GIF: $ext = 'gif'; break; 
-			default: return false; 
-		}
+		$ext = Image::getValidImageExtension($type);
+		if ($ext === false) return false;
 		
 		switch($type){ // create image
 			case IMAGETYPE_JPEG: $n_img = imagecreatefromjpeg($file); break; 
 			case IMAGETYPE_PNG: $n_img = imagecreatefrompng($file); break; 
 			case IMAGETYPE_GIF: $n_img = imagecreatefromgif($file); break; 
+			case 'image/svg+xml' : break;
 			default: return false; 
 		}
 		
@@ -149,9 +144,9 @@ class Image
 				break; 
 			default: break;
 		}
-		
+		if ($type!='image/svg+xml') {
 		imagecopyresampled($dst_img, $n_img, 0, 0, $x_start, $y_start, $new_w, $new_h, $src_w, $src_h);
-		
+		}
 		//return $dst_img;
 		$full = $dir.$filename;
 		
@@ -175,6 +170,11 @@ class Image
 				$size = filesize($full);
 				break;
 			}
+			case 'svg':{
+				copy($file, $full); // we just copy it, SVG is vectorized it scales directly in browser
+				$size = filesize($full);
+				break;
+			}
 			default: return 0; 
 			
 			return $size;	
@@ -185,16 +185,10 @@ class Image
 	// Resizes and crops the picture from the center
 	public static function ResizeWithCenterCrop($image, $dir, $filename, $target_w, $target_h){
 		
-		list($curr_w, $curr_h, $type, $attr) = getimagesize($image);
+		list($curr_w, $curr_h, $type, $attr) = Image::getImageInfo($image);
 		
-		$ext = 'jpg';
-		
-		switch($type){ // create image
-			case IMAGETYPE_JPEG: $ext = 'jpg'; break; 
-			case IMAGETYPE_PNG: $ext = 'png'; break; 
-			case IMAGETYPE_GIF: $ext = 'gif'; break; 
-			default: return false; 
-		}
+		$ext = Image::getValidImageExtension($type);
+		if ($ext === false) return false;
 	
 		$scale_h = $target_h/$curr_h;
 		$scale_w = $target_w/$curr_w;
@@ -219,6 +213,7 @@ class Image
 			case IMAGETYPE_JPEG: $n_img = imagecreatefromjpeg($image); break; 
 			case IMAGETYPE_PNG: $n_img = imagecreatefrompng($image); break; 
 			case IMAGETYPE_GIF: $n_img = imagecreatefromgif($image); break; 
+			case 'image/svg+xml' : break;
 			default: return false; 
 		}
 	
@@ -245,9 +240,9 @@ class Image
 		}
 		
 		// (for testing) die('curr_w='.$curr_w.' curr_h='.$curr_h.' x_start='.$x_start.' y_start='.$y_start.' target_w='.$target_w.' target_h='.$target_h.' up_w='.$up_w.' up_h='.$up_h);
-		
+		if ($type!='image/svg+xml') {
 		imagecopyresampled($dst_img, $n_img, 0, 0, $x_start, $y_start, $target_w, $target_h, $up_w, $up_h); 
-		
+		}
 		//return $dst_img;
 		$full = $dir.$filename;
 		
@@ -274,9 +269,44 @@ class Image
 				return $size;
 				break;
 			}
+			case 'svg':{
+				copy($image, $full); // we just copy it, SVG is vectorized it scales directly in browser
+				$size = filesize($full);
+				break;
+			}
 			default: return 0; 
 		}
 	
+	}
+
+	public static function getImageInfo($file) {
+		list($width, $height, $type, $attr) = getimagesize($file);
+		if (empty($type)) {  // we try for svg
+			$finfo = finfo_open(FILEINFO_MIME_TYPE);
+			$fi = finfo_file($finfo, $file);
+			if ($fi == 'image/svg+xml') {  // for SVG files which getimagesize returns empty values
+				$xmlget = simplexml_load_file($file);
+				$xmlattributes = $xmlget->attributes();
+				$width = (int) $xmlattributes->width;  // this is approximate
+				$height = (int) $xmlattributes->height;  // this is approximate
+				$type = 'image/svg+xml';
+				$attr = '';
+			}
+		}
+		return array($width, $height, $type, $attr);
+	}
+	
+	public static function getValidImageExtension($filetype) {
+		global $ALLOWED_IMAGETYPES;
+		switch($filetype){ // create image
+			case IMAGETYPE_JPEG: $ext = 'jpg'; break;
+			case IMAGETYPE_PNG: $ext = 'png'; break;
+			case IMAGETYPE_GIF: $ext = 'gif'; break;
+			case 'image/svg+xml' : $ext = 'svg'; break;
+			default: $ext = '';
+		}
+		$is_image = in_array($ext, $ALLOWED_IMAGETYPES);
+		return ($is_image ? $ext : false);
 	}
 }
 	

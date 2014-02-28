@@ -1,3 +1,11 @@
+<?php
+// prepare extension types
+global $ALLOWED_IMAGETYPES,$ALLOWED_FILETYPES;
+$__ImageExtensions = $ALLOWED_IMAGETYPES;
+$__FilesExtensions = $ALLOWED_FILETYPES;
+array_walk($__ImageExtensions, function(&$e) {$e = "extension == '$e'";});
+array_walk($__FilesExtensions, function(&$e) {$e = "extension == '$e'";});
+?>
 <div class="modal fade" id="filesDialog">
 
 	<!-- messages -->
@@ -19,8 +27,8 @@
 				
 				    <ul data-bind="foreach: files">
 				      <li>
-				        <i class="fa fa-file-alt" data-bind="visible: (extension == 'pdf' || extension == 'doc'|| extension == 'docx'|| extension == 'zip' || extension == 'ppt')"></i>
-				        <i class="fa fa-picture" data-bind="visible: (extension == 'png' || extension == 'jpg'|| extension == 'gif')"></i>
+				        <i class="fa fa-file-alt" data-bind="visible: (<?php print implode(' || ', $__FilesExtensions); ?>)"></i>
+				        <i class="fa fa-picture" data-bind="visible: (<?php print implode(' || ', $__ImageExtensions); ?>)"></i>
 				        <a data-bind="attr:{'data-filename':filename, 'data-fullurl':fullUrl, 'data-extension':extension}, text:filename"></a>
 				      </li>
 				    </ul>

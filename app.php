@@ -70,4 +70,6 @@
 	require_once 'libs/AuthUser.php';
 	require_once 'libs/Publish.php';
 	
+	$ALLOWED_IMAGETYPES = array('gif', 'png', 'jpg', 'svg');
+	$ALLOWED_FILETYPES = array('ico', 'css', 'js', 'pdf', 'doc', 'docx', 'zip');
 ?>
