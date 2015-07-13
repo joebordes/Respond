@@ -99,42 +99,28 @@ class Publish
 	public static function SetupHtaccess($site){
 	
 		$htaccess = SITES_LOCATION.'/'.$site['FriendlyId'].'/.htaccess';
-	
-		if($site['UrlMode'] == 'html5'){
-			
-			$contents = 'Options -Indexes'.PHP_EOL.
-				'RewriteEngine On'.PHP_EOL.
-				'RewriteCond %{REQUEST_FILENAME} !-f'.PHP_EOL.
-				'RewriteCond %{REQUEST_FILENAME} !-d'.PHP_EOL.
-				'RewriteCond %{REQUEST_URI} !.*\.(css¦js|html|png)'.PHP_EOL.
-				'RewriteRule (.*) index.html [L]';
-			
-
-			file_put_contents($htaccess, $contents); // save to file			
-		}
-		else if($site['UrlMode'] == 'static'){
-						
-			$contents = 'Options -Indexes'.PHP_EOL.
-				'<IfModule mod_rewrite.c>'.PHP_EOL.
-				'RewriteEngine On'.PHP_EOL.
-				'RewriteCond %{REQUEST_FILENAME} !-f'.PHP_EOL.
-				'RewriteRule ^([^\.]+)$ $1.html [NC,L]'.PHP_EOL.
-				'ErrorDocument 404 /page/error'.PHP_EOL.
-				'</IfModule>'.PHP_EOL.
-				'<IfModule mod_expires.c>'.PHP_EOL.
-				'ExpiresActive On '.PHP_EOL.
-				'ExpiresDefault "access plus 1 month"'.PHP_EOL.
-				'ExpiresByType image/x-icon "access plus 1 year"'.PHP_EOL.
-				'ExpiresByType image/gif "access plus 1 month"'.PHP_EOL.
-				'ExpiresByType image/png "access plus 1 month"'.PHP_EOL.
-				'ExpiresByType image/jpg "access plus 1 month"'.PHP_EOL.
-				'ExpiresByType image/jpeg "access plus 1 month"'.PHP_EOL.
-				'ExpiresByType text/css "access 1 month"'.PHP_EOL.
-				'ExpiresByType application/javascript "access plus 1 year"'.PHP_EOL.
-				'</IfModule>';	
-			
-			file_put_contents($htaccess, $contents); // save to file
-		}
+					
+		$contents = 'Options -Indexes'.PHP_EOL.
+			'<IfModule mod_rewrite.c>'.PHP_EOL.
+			'RewriteEngine On'.PHP_EOL.
+			'RewriteCond %{REQUEST_FILENAME} !-f'.PHP_EOL.
+			'RewriteRule ^([^\.]+)$ $1.html [NC,L]'.PHP_EOL.
+			'ErrorDocument 404 /page/error'.PHP_EOL.
+			'</IfModule>'.PHP_EOL.
+			'<IfModule mod_expires.c>'.PHP_EOL.
+			'ExpiresActive On '.PHP_EOL.
+			'ExpiresDefault "access plus 1 month"'.PHP_EOL.
+			'ExpiresByType image/x-icon "access plus 1 year"'.PHP_EOL.
+			'ExpiresByType image/gif "access plus 1 month"'.PHP_EOL.
+			'ExpiresByType image/png "access plus 1 month"'.PHP_EOL.
+			'ExpiresByType image/jpg "access plus 1 month"'.PHP_EOL.
+			'ExpiresByType image/jpeg "access plus 1 month"'.PHP_EOL.
+			'ExpiresByType text/css "access 1 month"'.PHP_EOL.
+			'ExpiresByType application/javascript "access plus 1 year"'.PHP_EOL.
+			'</IfModule>';	
+		
+		file_put_contents($htaccess, $contents); // save to file
+		
 		
 	}
 	
@@ -360,23 +346,13 @@ class Publish
 			copy($configure_src, $configure_dest);
 		}
 		
-		// copy files
-		if(FILES_ON_S3 == true){  // copy files to S3
+		// copy files locally
+		$files_src = APP_LOCATION.THEMES_FOLDER.'/'.$theme.'/files/';
 		
-			$files_src = APP_LOCATION.THEMES_FOLDER.'/'.$theme.'/files';
-			
-			// deploy directory to S3
-			S3::DeployDirectory($site, $files_src, 'files/');
-		
-		}
-		else{ // copy files locally
-			$files_src = APP_LOCATION.THEMES_FOLDER.'/'.$theme.'/files/';
-			
-			if(file_exists($files_src)){
-				$files_dest = SITES_LOCATION.'/'.$site['FriendlyId'].'/files/';
-	
-				Utilities::CopyDirectory($files_src, $files_dest);
-			}
+		if(file_exists($files_src)){
+			$files_dest = SITES_LOCATION.'/'.$site['FriendlyId'].'/files/';
+
+			Utilities::CopyDirectory($files_src, $files_dest);
 		}
 		
 		// copy resources
@@ -434,22 +410,8 @@ class Publish
 		}
 		
 		// set imagesURL
-		if($env == 'local'){  // if it is locally deployed
-		
-			$imagesURL = $site['Domain'].'/';
+		$imagesURL = $site['Domain'].'/';
 			
-			// if files are stored on S3
-			if(FILES_ON_S3 == true){
-				$bucket = $site['Bucket'];
-				$imagesURL = str_replace('{{bucket}}', $bucket, S3_URL).'/';
-				$imagesURL = str_replace('{{site}}', $site['FriendlyId'], $imagesURL);
-			}
-			
-		}
-		else{ // if the deployment is on S3
-			$imagesURL = '/';
-		}
-		
 		// set iconUrl
 		$iconUrl = '';
 		
@@ -491,7 +453,6 @@ class Publish
 			'API' => API_URL,
 			'Name' => $site['Name'],
 			'ImagesUrl' => $imagesURL,
-			'UrlMode' => $site['UrlMode'],
 			'LogoUrl' => $logoUrl,
 			'AltLogoUrl' => $altLogoUrl,
 			'PayPalLogoUrl' => $payPalLogoUrl,
@@ -1165,13 +1126,6 @@ class Publish
 		
 		// set imaages URL
 		$imagesURL = $site['Domain'].'/';
-			
-		// if files are stored on S3
-		if(FILES_ON_S3 == true){
-			$bucket = $site['Bucket'];
-			$imagesURL = str_replace('{{bucket}}', $bucket, S3_URL).'/';
-			$imagesURL = str_replace('{{site}}', $site['FriendlyId'], $imagesURL);
-		}
 		
 		// set iconURL
 		$iconURL = '';
