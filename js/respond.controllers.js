@@ -580,7 +580,6 @@
 		
 		// shows the images dialog
 		$scope.showAddImage = function(action){
-		
 			$scope.retrieveImages();
 			$('#imagesDialog').attr('data-action', action);
 			$('#imagesDialog').modal('show');
@@ -2436,6 +2435,8 @@
 			PageType.remove(pageType);
 		
 			$('#removePageTypeDialog').modal('hide');
+			
+			$scope.setPageType($scope.pageTypes[0]);
 		}
 		
 		// shows the edit tags dialog

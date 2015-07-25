@@ -256,8 +256,8 @@ class SiteCreateResource extends Tonic\Resource {
     		if(SEND_WELCOME_EMAIL == true && $email != ''){
     		
 	    		$to = $email;
-	    		$from = REPLY_TO;
-	    		$fromName = REPLY_TO_NAME;
+	    		$from = EMAILS_FROM;
+	    		$fromName = EMAILS_FROM_NAME;
 	    		$subject = WELCOME_EMAIL_SUBJECT;
 	    		$file = WELCOME_EMAIL_FILE;
 	    		
@@ -268,7 +268,7 @@ class SiteCreateResource extends Tonic\Resource {
 	    		$replace = array(
 	    			'{{brand-logo}}' => '<img src="'.BRAND_LOGO.'" style="max-height:50px">',
 	    			'{{brand}}' => BRAND,
-	    			'{{reply-to}}' => REPLY_TO,
+	    			'{{reply-to}}' => EMAILS_FROM,
 	    			'{{new-site-url}}' => $newSiteUrl,
 	    			'{{login-url}}' => $loginUrl
 	    		);
@@ -486,6 +486,9 @@ class SiteSaveResource extends Tonic\Resource {
             $formPublicId = $request['formPublicId'];
             $formPrivateId = $request['formPrivateId'];
             
+            $embeddedCodeHead = $request['embeddedCodeHead'];
+            $embeddedCodeBottom = $request['embeddedCodeBottom'];
+            
             $SMTPPasswordIV = '';
             
             // encyrpt password, #ref: http://stackoverflow.com/questions/10916284/how-to-encrypt-decrypt-data-in-php
@@ -517,7 +520,7 @@ class SiteSaveResource extends Tonic\Resource {
             	$taxRate, $payPalId, $payPalUseSandbox, 
             	$welcomeEmail, $receiptEmail,
 				$isSMTP, $SMTPHost, $SMTPAuth, $SMTPUsername, $SMTPSecure,
-            	$formPublicId, $formPrivateId);
+            	$formPublicId, $formPrivateId, $embeddedCodeHead, $embeddedCodeBottom);
             
        
             Publish::PublishContent($token->SiteId);
