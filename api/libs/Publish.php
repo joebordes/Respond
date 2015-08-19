@@ -484,8 +484,6 @@ class Publish
 		// get site file
 		$file = SITES_LOCATION.'/'.$site['FriendlyId'].'/js/respond.site.js';
 		
-		echo 'pre-check, file='.$file;
-		
 		if(file_exists($file)){
 			
 			// get contents
@@ -1553,6 +1551,17 @@ class Publish
 			$html = str_replace('{{fullAltLogoUrl}}', $imagesURL.'files/'.$site['LogoUrl'], $html);
 		}
 		
+		// set urls
+		$relativeURL = $page['FriendlyId'];
+		
+		if($page['PageTypeId']!=-1){
+        	$pageType = PageType::GetByPageTypeId($page['PageTypeId']);
+			$relativeURL = strtolower($pageType['FriendlyId']).'/'.$page['FriendlyId'];
+        }
+        
+        $fullURL = $site['Domain'].'/'.$relativeURL;
+		
+		
 		// replace mustaches syntax {{page.Description}} {{site.Name}}
 		$html = str_replace('{{page.Name}}', $page['Name'], $html);
 		$html = str_replace('{{page.Description}}', $page['Description'], $html);
@@ -1566,6 +1575,10 @@ class Publish
 		$html = str_replace('{{site.EmbeddedCodeBottom}}', $site['EmbeddedCodeBottom'], $html);
 		$html = str_replace('{{page.FullStylesheetUrl}}', 'css/'.$page['Stylesheet'].'.css', $html);
 		
+		// urls
+		$html = str_replace('{{page.Url}}', $relativeURL, $html);
+		$html = str_replace('{{page.FullUrl}}', $fullURL, $html);
+		
 		return $html;
 		
 	}
@@ -1574,7 +1587,7 @@ class Publish
 	public static function RemoveDraft($pageId){
 	
 		// remove a draft from the page
-		Page::RemoveDraft($page['PageId']);
+		Page::RemoveDraft($pageId);
 		
 		return false;
 	}
